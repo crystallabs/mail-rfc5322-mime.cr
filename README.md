@@ -77,9 +77,10 @@ What strict means here:
   (RFC 6532) unless `ascii_headers` is set, which turns non-ASCII values into
   `=?UTF-8?B?...?=` encoded words.
 * `MIME-Version: 1.0` is added to the top-level message if missing.
-* Text content with no NUL, no bare CR and no line over 998 bytes is written
-  7bit or 8bit with line breaks normalized to the chosen `eol` (a final line
-  break is added if missing). Anything else is base64 in 76-column lines. A
+* Content that is clean text, whatever its media type (no NUL, no bare CR,
+  no line over 998 bytes), is written 7bit or 8bit with line breaks normalized
+  to the chosen `eol` (a final line break is added if missing). Anything else
+  is base64 in 76-column lines. A
   declared `base64` or `quoted-printable` encoding is honoured.
 * Multipart boundaries are generated when absent.
 * Writing never mutates the message.
@@ -119,3 +120,12 @@ bin/ameba
 ## Contributors
 
 - [Davor Ocelic](https://github.com/docelic) - creator and maintainer
+
+## License
+
+Copyright (C) 2026 Davor Ocelic.
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License, version 3, as
+published by the Free Software Foundation. See [LICENSE](LICENSE) for the
+full text.

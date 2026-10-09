@@ -6,7 +6,7 @@ authors:
 
 crystal: ">= 1.21.0"
 
-license: MIT
+license: AGPL-3.0
 
 description: |
   Internet message format (RFC 5322) headers and MIME (RFC 2045-2047, 2231)

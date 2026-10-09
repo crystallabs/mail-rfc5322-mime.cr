@@ -1,9 +1,10 @@
 module Mail
   # Strict writing. Headers are folded at 78 columns and written as UTF-8 (or
-  # as encoded words when asked). Text content that has no NUL, no bare CR and
-  # no line over 998 bytes goes out 7bit or 8bit with its line breaks
-  # normalized to `eol`; anything else goes base64 in 76-column lines. A
-  # declared base64 or quoted-printable encoding is honoured.
+  # as encoded words when asked). Content that is clean text, whatever its
+  # media type (no NUL, no bare CR, no line over 998 bytes), goes out 7bit or
+  # 8bit with its line breaks normalized to `eol`; anything else goes base64
+  # in 76-column lines. A declared base64 or quoted-printable encoding is
+  # honoured.
   module Writer
     BASE64_LINE = 76
 
@@ -47,7 +48,7 @@ module Mail
 
       body = part.body
       return "7bit" if body.empty?
-      return "base64" unless part.content_type.text? && textual?(body)
+      return "base64" unless textual?(body)
       body.all?(&.< 128) ? "7bit" : "8bit"
     end
 
