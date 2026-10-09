@@ -1,0 +1,23 @@
+name: mail-rfc5322-mime
+version: 0.1.0
+
+authors:
+  - Davor Ocelic <docelic@crystallabs.io>
+
+crystal: ">= 1.21.0"
+
+license: MIT
+
+description: |
+  Internet message format (RFC 5322) headers and MIME (RFC 2045-2047, 2231)
+  bodies: lenient parsing of real-world mail, strict writing of your own.
+
+# Ameba declares no `executables`; this target builds ./bin/ameba.
+targets:
+  ameba:
+    main: lib/ameba/bin/ameba.cr
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba
+    branch: master
