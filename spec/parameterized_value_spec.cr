@@ -132,14 +132,16 @@ describe Mail::ParameterizedValue do
     end
   end
 
-  describe "#==" do
+  describe "#== and #hash" do
     it "compares value and parameters" do
       first = Mail::ParameterizedValue.new("text/plain", {"charset" => "utf-8"})
       second = Mail::ParameterizedValue.new("text/plain", {"charset" => "utf-8"})
       third = Mail::ParameterizedValue.new("text/plain", {"charset" => "ascii"})
       first.should eq second
+      first.hash.should eq second.hash
       first.should_not eq third
       first.should_not eq Mail::ParameterizedValue.new("text/html", {"charset" => "utf-8"})
+      [first, second, third].uniq.size.should eq 2
     end
   end
 

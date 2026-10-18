@@ -73,9 +73,7 @@ module Mail
       end
     end
 
-    def ==(other : self) : Bool
-      value == other.value && params == other.params
-    end
+    def_equals_and_hash value, params
 
     def self.quote_if_needed(text : String) : String
       return text unless text.empty? || text.each_char.any? { |char| char.ascii_whitespace? || TSPECIALS.includes?(char) || char.ord < 32 }
