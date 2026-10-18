@@ -2,11 +2,12 @@ module Mail
   # RFC 2047 encoded words, `=?charset?B?base64?=` and `=?charset?Q?text?=`,
   # as they appear in Subject and other unstructured headers.
   module EncodedWord
+    WORD    = /=\?[^?\s]+\?[BbQq]\?[^?\s]*\?=/
     PATTERN = /=\?([^?\s]+)\?([BbQq])\?([^?\s]*)\?=/
     # Whitespace between two adjacent encoded words carries no meaning.
-    BETWEEN = /(=\?[^?\s]+\?[BbQq]\?[^?\s]*\?=)[ \t\r\n]+(?==\?)/
+    BETWEEN = /(#{WORD})[ \t\r\n]+(?==\?)/
     # One or more adjacent encoded words.
-    RUN = /(?:=\?[^?\s]+\?[BbQq]\?[^?\s]*\?=)+/
+    RUN = /(?:#{WORD})+/
 
     MAX_WORD = 75
 
