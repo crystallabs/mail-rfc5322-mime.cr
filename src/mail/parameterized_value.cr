@@ -19,21 +19,11 @@ module Mail
 
       sections = {} of String => Array({Int32, Bool, String})
       pieces.each do |piece|
-        name, separator, raw = piece.partition('=')
-        next if separator.empty?
-        name = name.strip.downcase
-        raw = raw.strip
-        extended = name.ends_with?('*')
-        name = name.rchop('*') if extended
-        index = 0
-        if (star = name.index('*')) && (number = name[star + 1..].to_i?)
-          index = number
-          name = name[0, star]
-        end
-        raw = unquote(raw) unless extended
+        next unless section = parse_section(piece)
+        name, index, extended, raw = section
         parts = sections[name] ||= [] of {Int32, Bool, String}
         # A repeated parameter (or section) is a mistake; the first one wins.
-        parts << {index, extended, raw} unless parts.any? { |section| section[0] == index }
+        parts << {index, extended, raw} unless parts.any? { |existing| existing[0] == index }
       end
 
       params = {} of String => String
@@ -90,6 +80,25 @@ module Mail
     def self.quote_if_needed(text : String) : String
       return text unless text.empty? || text.each_char.any? { |char| char.ascii_whitespace? || TSPECIALS.includes?(char) || char.ord < 32 }
       "\"#{text.gsub(/(["\\])/) { "\\#{$1}" }}\""
+    end
+
+    # One `name=value` piece as its name, RFC 2231 section index, whether it
+    # is an extended (`name*=`) value, and the raw value; `nil` for a piece
+    # with no `=`.
+    private def self.parse_section(piece : String) : {String, Int32, Bool, String}?
+      name, separator, raw = piece.partition('=')
+      return if separator.empty?
+      name = name.strip.downcase
+      raw = raw.strip
+      extended = name.ends_with?('*')
+      name = name.rchop('*') if extended
+      index = 0
+      if (star = name.index('*')) && (number = name[star + 1..].to_i?)
+        index = number
+        name = name[0, star]
+      end
+      raw = unquote(raw) unless extended
+      {name, index, extended, raw}
     end
 
     # Splits on `;` outside quotes, honouring backslash escapes.
