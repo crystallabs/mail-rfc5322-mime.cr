@@ -118,7 +118,7 @@ module Mail
       end
       @parts = body.empty? && first.headers.empty? ? [] of Part : [first]
       @body = Bytes.empty
-      headers["Content-Type"] = "multipart/#{subtype}; boundary=#{Writer.boundary}"
+      self.content_type = ContentType.new("multipart/#{subtype}", {"boundary" => Writer.boundary})
     end
 
     def add_part(part : Part) : Part

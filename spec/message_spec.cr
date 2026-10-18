@@ -225,6 +225,8 @@ describe Mail::Part do
     parts[0].content_type.value.should eq "text/plain"
     message.content_type.multipart?.should be_true
     message.content_type.boundary.should_not be_nil
+    # The boundary holds tspecials, so it must be written as a quoted string.
+    message.headers["Content-Type"].should match(/\Amultipart\/mixed; boundary="=_[0-9a-f]{24}"\z/)
     message.headers["Subject"].should eq "S"
     message.body.should be_empty
   end
