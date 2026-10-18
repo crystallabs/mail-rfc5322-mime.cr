@@ -57,7 +57,8 @@ module Mail
         end
         flush.call
         field, separator, rest = line.partition(':')
-        next if separator.empty? || field.empty? || field.each_char.any? { |char| char.ascii_whitespace? || char.ord < 33 || char.ord > 126 }
+        # A field name is one or more printable ASCII characters other than the colon.
+        next if separator.empty? || field.empty? || field.each_char.any? { |char| char.ord < 33 || char.ord > 126 }
         name = field
         value << rest.strip
       end
