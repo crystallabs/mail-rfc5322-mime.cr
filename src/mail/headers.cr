@@ -112,9 +112,10 @@ module Mail
       a.compare(b, case_insensitive: true) == 0
     end
 
-    # A value must not contain bare line breaks; a folded one is unfolded.
+    # A value must not contain line breaks: a folded one is unfolded, and a
+    # stray CR becomes a space too.
     private def sanitize(value : String) : String
-      value.gsub(/\r?\n[ \t]*/, " ").strip
+      value.gsub(/\r?\n[ \t]*|\r/, " ").strip
     end
   end
 end

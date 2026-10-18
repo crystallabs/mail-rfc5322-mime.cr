@@ -94,6 +94,8 @@ describe Mail::Headers do
       headers["X-Pad"]?.should eq "padded"
       headers.add("X-Bare", "a\nb")
       headers["X-Bare"]?.should eq "a b"
+      headers.add("X-CR", "a\rb\r")
+      headers["X-CR"]?.should eq "a b"
     end
 
     it "deletes every field of that name case-insensitively" do
