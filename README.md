@@ -74,8 +74,9 @@ message.write(io, ascii_headers: true)    # encoded words instead of raw UTF-8
 What strict means here:
 
 * Headers are folded at 78 columns on whitespace. Values are written as UTF-8
-  (RFC 6532) unless `ascii_headers` is set, which turns non-ASCII values into
-  `=?UTF-8?B?...?=` encoded words.
+  (RFC 6532) unless `ascii_headers` is set, which turns the non-ASCII words
+  of a value into `=?UTF-8?B?...?=` encoded words and leaves the ASCII ones,
+  such as addresses, as they are.
 * `MIME-Version: 1.0` is added to the top-level message if missing.
 * Content that is clean text, whatever its media type (no NUL, no bare CR,
   no line over 998 bytes), is written 7bit or 8bit with line breaks normalized

@@ -115,9 +115,24 @@ describe Mail::EncodedWord do
       Mail::EncodedWord.encode_if_needed("").should eq ""
     end
 
-    it "encodes anything with non-ASCII characters" do
+    it "encodes the words with non-ASCII characters and keeps the rest" do
       Mail::EncodedWord.encode_if_needed("Café").should eq "=?UTF-8?B?Q2Fmw6k=?="
-      Mail::EncodedWord.encode_if_needed("Re: naïve").should eq "=?UTF-8?B?UmU6IG5hw692ZQ==?="
+      Mail::EncodedWord.encode_if_needed("Re: naïve").should eq "Re: =?UTF-8?B?bmHDr3Zl?="
+      Mail::EncodedWord.encode_if_needed("Käte <k@example.com>").should eq "=?UTF-8?B?S8OkdGU=?= <k@example.com>"
+    end
+
+    it "encodes a run of non-ASCII words as one unit so their spacing survives" do
+      encoded = Mail::EncodedWord.encode_if_needed("Zażółć gęślą jaźń")
+      encoded.split(' ').size.should eq 1
+      Mail::EncodedWord.decode(encoded).should eq "Zażółć gęślą jaźń"
+    end
+
+    it "round-trips mixed text, including repeated spaces" do
+      {"Päy the rënt", "a  ä", "ä  a", "ä a  ä", "x é y", "1 ü 2 ü 3"}.each do |text|
+        encoded = Mail::EncodedWord.encode_if_needed(text)
+        encoded.ascii_only?.should be_true
+        Mail::EncodedWord.decode(encoded).should eq text
+      end
     end
   end
 end

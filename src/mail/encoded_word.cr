@@ -43,9 +43,26 @@ module Mail
       words.join(' ')
     end
 
-    # `text` if it is plain ASCII, otherwise its encoded form.
+    # `text` if it is plain ASCII. Otherwise each run of space-separated
+    # words holding non-ASCII characters is replaced by encoded words, and
+    # the ASCII words around it are kept, so that `Käte <k@example.com>`
+    # keeps a readable address. Whitespace between adjacent encoded words is
+    # dropped on decoding, so a run is encoded as one unit, spaces included.
     def self.encode_if_needed(text : String) : String
-      text.ascii_only? ? text : encode(text)
+      return text if text.ascii_only?
+      pieces = [] of String
+      run = [] of String
+      text.split(' ').each do |word|
+        if word.ascii_only? && !word.empty?
+          pieces << encode(run.join(' ')) unless run.empty?
+          run.clear
+          pieces << word
+        else
+          run << word
+        end
+      end
+      pieces << encode(run.join(' ')) unless run.empty?
+      pieces.join(' ')
     end
   end
 end
