@@ -62,10 +62,10 @@ module Mail
     def text=(string : String) : String
       @parts = nil
       @body = string.to_slice
-      type = headers.has?("Content-Type") ? content_type : ContentType.text_plain
+      type = content_type
       type = ContentType.text_plain unless type.text?
       type["charset"] = "utf-8"
-      headers["Content-Type"] = type.to_s
+      self.content_type = type
       string
     end
 
