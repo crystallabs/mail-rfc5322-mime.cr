@@ -195,6 +195,8 @@ describe Mail::Writer do
     Mail::Writer.choose_encoding(part, nil).should eq "base64"
     part.body = ("x" * 999 + "\n").to_slice
     Mail::Writer.choose_encoding(part, nil).should eq "base64"
+    part.body = ("x" * 998 + "\r\n").to_slice
+    Mail::Writer.choose_encoding(part, nil).should eq "7bit"
     part.body = "bare\rcr".to_slice
     Mail::Writer.choose_encoding(part, nil).should eq "base64"
     part.body = Bytes.empty

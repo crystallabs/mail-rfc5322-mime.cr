@@ -72,13 +72,17 @@ module Mail
       end
     end
 
-    # No NUL byte, no CR that is not part of CRLF, no line over 998 bytes.
+    # No NUL byte, no CR that is not part of CRLF, no line over 998 bytes
+    # (the line break itself not counted).
     private def self.textual?(body : Bytes) : Bool
       run = 0
       body.each_with_index do |byte, index|
-        return false if byte == 0
-        return false if byte == 13 && !(index + 1 < body.size && body[index + 1] == 10)
-        if byte == 10
+        case byte
+        when 0
+          return false
+        when 13
+          return false unless index + 1 < body.size && body[index + 1] == 10
+        when 10
           run = 0
         else
           run += 1
