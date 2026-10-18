@@ -4,6 +4,7 @@ module Mail
   # space.
   module QuotedPrintable
     MAX_LINE = 76
+    HEX      = "0123456789ABCDEF"
 
     def self.decode(text : String, q_encoding : Bool = false) : Bytes # ameba:disable Metrics/CyclomaticComplexity
       io = IO::Memory.new
@@ -68,14 +69,19 @@ module Mail
 
           at_line_end = i + 1 >= bytes.size || bytes[i + 1] == '\n'.ord || bytes[i + 1] == '\r'.ord
           literal = (33 <= byte <= 126 && byte != '='.ord) || ((byte == ' '.ord || byte == '\t'.ord) && !at_line_end)
-          token = literal ? byte.unsafe_chr.to_s : "=%02X" % byte
+          width = literal ? 1 : 3
 
-          if column + token.size > MAX_LINE - 1
+          # Leave room for the `=` of a soft break.
+          if column + width > MAX_LINE - 1
             output << '=' << eol
             column = 0
           end
-          output << token
-          column += token.size
+          if literal
+            output << byte.unsafe_chr
+          else
+            output << '=' << HEX[byte >> 4] << HEX[byte & 0xF]
+          end
+          column += width
           i += 1
         end
       end
