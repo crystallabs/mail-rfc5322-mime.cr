@@ -39,6 +39,12 @@ describe Mail::ParameterizedValue do
       parsed.params.should eq({"charset" => "utf-8"})
     end
 
+    it "keeps the first of a repeated parameter or section" do
+      Mail::ParameterizedValue.parse("text/plain; charset=utf-8; charset=latin1").params.should eq({"charset" => "utf-8"})
+      Mail::ParameterizedValue.parse("text/plain; Charset=utf-8; charset=latin1")["charset"].should eq "utf-8"
+      Mail::ParameterizedValue.parse("attachment; filename*0=a; filename*1=b; filename*1=c")["filename"].should eq "ab"
+    end
+
     it "decodes an RFC 2231 charset-tagged value" do
       Mail::ParameterizedValue.parse("attachment; filename*=utf-8''%E2%82%AC.txt")["filename"].should eq "€.txt"
       Mail::ParameterizedValue.parse("attachment; filename*=iso-8859-1''caf%E9")["filename"].should eq "café"

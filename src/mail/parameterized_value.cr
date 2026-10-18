@@ -31,7 +31,9 @@ module Mail
           name = name[0, star]
         end
         raw = unquote(raw) unless extended
-        (sections[name] ||= [] of {Int32, Bool, String}) << {index, extended, raw}
+        parts = sections[name] ||= [] of {Int32, Bool, String}
+        # A repeated parameter (or section) is a mistake; the first one wins.
+        parts << {index, extended, raw} unless parts.any? { |section| section[0] == index }
       end
 
       params = {} of String => String
