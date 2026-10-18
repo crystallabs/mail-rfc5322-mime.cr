@@ -5,22 +5,26 @@ module Mail
     PATTERN = /=\?([^?\s]+)\?([BbQq])\?([^?\s]*)\?=/
     # Whitespace between two adjacent encoded words carries no meaning.
     BETWEEN = /(=\?[^?\s]+\?[BbQq]\?[^?\s]*\?=)[ \t\r\n]+(?==\?)/
+    # One or more adjacent encoded words.
+    RUN = /(?:=\?[^?\s]+\?[BbQq]\?[^?\s]*\?=)+/
 
     MAX_WORD = 75
 
-    # Replaces every encoded word in `text` with its decoded form.
+    # Replaces every encoded word in `text` with its decoded form. Adjacent
+    # words in the same charset are decoded together, so a multi-byte
+    # character that a careless writer split across two words survives.
     def self.decode(text : String) : String
       return text unless text.includes?("=?")
-      text.gsub(BETWEEN, "\\1").gsub(PATTERN) do |word, match|
-        bytes = begin
-          case match[2].upcase
-          when "B" then Base64.decode(match[3])
-          else          QuotedPrintable.decode(match[3], q_encoding: true)
-          end
-        rescue Base64::Error
-          nil
+      text.gsub(BETWEEN, "\\1").gsub(RUN) do |run|
+        words = run.scan(PATTERN).map do |match|
+          {verbatim: match[0], charset: Charset.normalize(match[1]), bytes: decode_text(match[2], match[3])}
         end
-        bytes ? Charset.decode(bytes, match[1]) : word
+        words.chunk_while { |a, b| a[:bytes] && b[:bytes] && a[:charset] == b[:charset] }.join do |group|
+          next group.first[:verbatim] unless group.first[:bytes]
+          bytes = IO::Memory.new
+          group.each { |word| bytes.write(word[:bytes].as(Bytes)) }
+          Charset.decode(bytes.to_slice, group.first[:charset])
+        end
       end
     end
 
@@ -41,6 +45,16 @@ module Mail
       end
       words << prefix + Base64.strict_encode(chunk.to_slice) + "?=" unless chunk.empty?
       words.join(' ')
+    end
+
+    # The bytes of one word's encoded text; `nil` when they do not decode.
+    private def self.decode_text(encoding : String, text : String) : Bytes?
+      case encoding.upcase
+      when "B" then Base64.decode(text)
+      else          QuotedPrintable.decode(text, q_encoding: true)
+      end
+    rescue Base64::Error
+      nil
     end
 
     # `text` if it is plain ASCII. Otherwise each run of space-separated

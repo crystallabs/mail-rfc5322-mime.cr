@@ -39,10 +39,19 @@ describe Mail::EncodedWord do
       Mail::EncodedWord.decode("=?UTF-8?B?Q2Fm?= and =?UTF-8?B?w6k=?=").should eq "Caf and é"
     end
 
-    it "replaces, rather than raises on, a multi-byte character split across two words" do
-      # RFC 2047 requires each word to hold whole characters; a split one is
-      # decoded per word, so the halves come out as replacement characters.
-      Mail::EncodedWord.decode("=?UTF-8?B?Q2Fmww==?= =?UTF-8?B?qQ==?=").should eq "Caf\uFFFD\uFFFD"
+    it "decodes adjacent words of one charset together, so a split character survives" do
+      # RFC 2047 requires each word to hold whole characters, but writers
+      # that split by byte count exist.
+      Mail::EncodedWord.decode("=?UTF-8?B?Q2Fmww==?= =?UTF-8?B?qQ==?=").should eq "Café"
+      Mail::EncodedWord.decode("=?UTF-8?Q?Caf=C3?=\r\n =?utf-8?B?qQ==?=").should eq "Café"
+    end
+
+    it "decodes adjacent words of different charsets separately" do
+      Mail::EncodedWord.decode("=?ISO-8859-1?Q?Caf=E9?= =?UTF-8?B?IOKCrA==?=").should eq "Café €"
+    end
+
+    it "keeps an undecodable word between decodable ones" do
+      Mail::EncodedWord.decode("=?UTF-8?B?Q2Fm?= =?UTF-8?B?!!!?= =?UTF-8?B?w6k=?=").should eq "Caf=?UTF-8?B?!!!?=é"
     end
 
     it "returns text without encoded words unchanged" do
