@@ -59,6 +59,17 @@ describe Mail::Date do
       Mail::Date.parse("2026-09-23T14:46:49Z").should eq Time.utc(2026, 9, 23, 14, 46, 49)
     end
 
+    it "reads an obsolete two- or three-digit year" do
+      Mail::Date.parse("Wed, 23 Sep 26 16:46:49 +0200").should eq Time.utc(2026, 9, 23, 14, 46, 49)
+      Mail::Date.parse("Wed, 23 Sep 99 16:46:49 +0200").should eq Time.utc(1999, 9, 23, 14, 46, 49)
+      Mail::Date.parse("Wed, 23 Sep 126 16:46:49 +0200").should eq Time.utc(2026, 9, 23, 14, 46, 49)
+    end
+
+    it "is nil for a date that does not exist" do
+      Mail::Date.parse("Tue, 31 Feb 2026 16:46:49 +0200").should be_nil
+      Mail::Date.parse("Wed, 23 Sep 2026 25:46:49 +0200").should be_nil
+    end
+
     it "is nil for nothing, blanks, a bare comment or garbage" do
       Mail::Date.parse(nil).should be_nil
       Mail::Date.parse("").should be_nil
